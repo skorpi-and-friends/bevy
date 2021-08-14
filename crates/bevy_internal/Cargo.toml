@@ -47,6 +47,11 @@ webgl = ["bevy_pbr/webgl", "bevy_render/webgl"]
 # enable systems that allow for automated testing on CI
 bevy_ci_testing = ["bevy_app/bevy_ci_testing", "bevy_render/ci_limits"]
 
+xform_64 = [
+    "bevy_transform/xform_64",
+    "bevy_math/xform_64",
+]
+
 [dependencies]
 # bevy
 bevy_app = { path = "../bevy_app", version = "0.5.0" }
