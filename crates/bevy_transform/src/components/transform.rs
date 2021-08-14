@@ -519,6 +519,26 @@ mod xform_64 {
         }
     }
 
+    impl F64Convert for Transform64 {
+        type F64Ver = Self;
+
+        #[inline]
+        fn f64(&self) -> Self::F64Ver {
+            *self
+        }
+    }
+    impl F32Convert for Transform64 {
+        type F32Ver = super::Transform32;
+
+        fn f32(&self) -> Self::F32Ver {
+            super::Transform32 {
+                translation: self.translation.f32(),
+                rotation: self.rotation.f32(),
+                scale: self.scale.f32(),
+            }
+        }
+    }
+
     /// Describe the position of an entity relative to the reference frame.
     ///
     /// * To place or move an entity, you should set its [`Transform`].

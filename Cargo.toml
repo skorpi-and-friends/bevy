@@ -26,7 +26,7 @@ default = [
   "vorbis",
   "x11",
   "filesystem_watcher",
-  "xform_64"
+  # "xform_64"
 ]
 
 # Force dynamic linking, which improves iterative compile times
