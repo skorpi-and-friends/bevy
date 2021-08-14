@@ -6,17 +6,17 @@ use rand::Rng;
 
 const BIRDS_PER_SECOND: u32 = 1000;
 const BASE_COLOR: Color = Color::rgb(5.0, 5.0, 5.0);
-const GRAVITY: f32 = -9.8 * 100.0;
-const MAX_VELOCITY: f32 = 750.;
-const BIRD_SCALE: f32 = 0.15;
-const HALF_BIRD_SIZE: f32 = 256. * BIRD_SCALE * 0.5;
+const GRAVITY: TReal = -9.8 * 100.0;
+const MAX_VELOCITY: TReal = 750.;
+const BIRD_SCALE: TReal = 0.15;
+const HALF_BIRD_SIZE: TReal = 256. * BIRD_SCALE * 0.5;
 
 struct BevyCounter {
     pub count: u128,
 }
 
 struct Bird {
-    velocity: Vec3,
+    velocity: TVec3,
 }
 
 struct BirdMaterial(Handle<ColorMaterial>);
@@ -131,24 +131,24 @@ fn mouse_handler(
 
     if mouse_button_input.pressed(MouseButton::Left) {
         let spawn_count = (BIRDS_PER_SECOND as f32 * time.delta_seconds()) as u128;
-        let bird_x = (window.width / -2.) + HALF_BIRD_SIZE;
-        let bird_y = (window.height / 2.) - HALF_BIRD_SIZE;
+        let bird_x = (window.width / -2.).default_precision() + HALF_BIRD_SIZE;
+        let bird_y = (window.height / 2.).default_precision() - HALF_BIRD_SIZE;
 
         for count in 0..spawn_count {
-            let bird_z = (counter.count + count) as f32 * 0.00001;
+            let bird_z = (counter.count + count) as TReal * 0.00001;
             commands
                 .spawn_bundle(SpriteBundle {
                     material: bird_material.0.clone(),
                     transform: Transform {
-                        translation: Vec3::new(bird_x, bird_y, bird_z),
-                        scale: Vec3::splat(BIRD_SCALE),
+                        translation: TVec3::new(bird_x, bird_y, bird_z),
+                        scale: TVec3::splat(BIRD_SCALE),
                         ..Default::default()
                     },
                     ..Default::default()
                 })
                 .insert(Bird {
-                    velocity: Vec3::new(
-                        rand::random::<f32>() * MAX_VELOCITY - (MAX_VELOCITY * 0.5),
+                    velocity: TVec3::new(
+                        rand::random::<TReal>() * MAX_VELOCITY - (MAX_VELOCITY * 0.5),
                         0.,
                         0.,
                     ),
@@ -161,15 +161,15 @@ fn mouse_handler(
 
 fn movement_system(time: Res<Time>, mut bird_query: Query<(&mut Bird, &mut Transform)>) {
     for (mut bird, mut transform) in bird_query.iter_mut() {
-        transform.translation.x += bird.velocity.x * time.delta_seconds();
-        transform.translation.y += bird.velocity.y * time.delta_seconds();
-        bird.velocity.y += GRAVITY * time.delta_seconds();
+        transform.translation.x += bird.velocity.x * time.delta_seconds().default_precision();
+        transform.translation.y += bird.velocity.y * time.delta_seconds().default_precision();
+        bird.velocity.y += GRAVITY * time.delta_seconds().default_precision();
     }
 }
 
 fn collision_system(window: Res<WindowDescriptor>, mut bird_query: Query<(&mut Bird, &Transform)>) {
-    let half_width = window.width as f32 * 0.5;
-    let half_height = window.height as f32 * 0.5;
+    let half_width = window.width as TReal * 0.5;
+    let half_height = window.height as TReal * 0.5;
 
     for (mut bird, transform) in bird_query.iter_mut() {
         let x_vel = bird.velocity.x;

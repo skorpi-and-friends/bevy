@@ -588,7 +588,8 @@ pub fn queue_meshes(
         mesh_meta.mesh_draw_info.clear();
         mesh_meta.material_bind_groups.next_frame();
 
-        let view_matrix = view.transform.compute_matrix();
+        // TODO: camera centered RenderWorld fix
+        let view_matrix = view.transform.compute_matrix().f32();
         let view_row_2 = view_matrix.row(2);
         for (i, mesh) in extracted_meshes.meshes.iter_mut().enumerate() {
             let gpu_material = &render_materials

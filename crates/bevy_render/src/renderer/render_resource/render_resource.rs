@@ -4,7 +4,7 @@ use bevy_asset::Handle;
 
 use bevy_core::{cast_slice, Bytes, Pod};
 pub use bevy_derive::{RenderResource, RenderResources};
-use bevy_math::{Mat4, Vec2, Vec3, Vec4};
+use bevy_math::{Mat4, Vec2, Vec3, Vec4, F32Convert};
 use bevy_transform::components::GlobalTransform;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -229,13 +229,16 @@ where
     }
 }
 
-impl RenderResource for GlobalTransform {
+// FIXME: impl these for both precisions to allow cohabitation
+// of entitites with either type (and consider where else this'll matter)
+impl RenderResource for GlobalTransform{
     fn resource_type(&self) -> Option<RenderResourceType> {
         Some(RenderResourceType::Buffer)
     }
 
     fn write_buffer_bytes(&self, buffer: &mut [u8]) {
-        let mat4 = self.compute_matrix();
+        // TODO: camera centered RenderWorld fix
+        let mat4 = self.compute_matrix().f32();
         mat4.write_bytes(buffer);
     }
 

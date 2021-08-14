@@ -159,7 +159,8 @@ pub fn camera_node_system(
         );
     }
 
-    let view = global_transform.compute_matrix();
+    // TODO: camera centered RenderWorld fix
+    let view = global_transform.compute_matrix().f32();
     let mut offset = 0;
 
     if let Some(RenderResourceBinding::Buffer { buffer, .. }) = bindings.get(CAMERA_VIEW) {

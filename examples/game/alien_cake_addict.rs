@@ -3,6 +3,7 @@ use bevy::{
     ecs::schedule::SystemSet,
     prelude::*,
     render::{camera::Camera, render_graph::base::camera::CAMERA_3D},
+    math,
 };
 use rand::Rng;
 
@@ -45,7 +46,7 @@ fn main() {
 }
 
 struct Cell {
-    height: f32,
+    height: TReal,
 }
 
 #[derive(Default)]
@@ -70,29 +71,29 @@ struct Game {
     bonus: Bonus,
     score: i32,
     cake_eaten: u32,
-    camera_should_focus: Vec3,
-    camera_is_focus: Vec3,
+    camera_should_focus: TVec3,
+    camera_is_focus: TVec3,
 }
 
 const BOARD_SIZE_I: usize = 14;
 const BOARD_SIZE_J: usize = 21;
 
-const RESET_FOCUS: [f32; 3] = [
-    BOARD_SIZE_I as f32 / 2.0,
+const RESET_FOCUS: [TReal; 3] = [
+    BOARD_SIZE_I as TReal / 2.0,
     0.0,
-    BOARD_SIZE_J as f32 / 2.0 - 0.5,
+    BOARD_SIZE_J as TReal / 2.0 - 0.5,
 ];
 
 fn setup_cameras(mut commands: Commands, mut game: ResMut<Game>) {
-    game.camera_should_focus = Vec3::from(RESET_FOCUS);
+    game.camera_should_focus = TVec3::from(RESET_FOCUS);
     game.camera_is_focus = game.camera_should_focus;
     commands.spawn_bundle(PerspectiveCameraBundle {
         transform: Transform::from_xyz(
-            -(BOARD_SIZE_I as f32 / 2.0),
-            2.0 * BOARD_SIZE_J as f32 / 3.0,
-            BOARD_SIZE_J as f32 / 2.0 - 0.5,
+            -(BOARD_SIZE_I as TReal / 2.0),
+            2.0 * BOARD_SIZE_J as TReal / 3.0,
+            BOARD_SIZE_J as TReal / 2.0 - 0.5,
         )
-        .looking_at(game.camera_is_focus, Vec3::Y),
+        .looking_at(game.camera_is_focus, TVec3::Y),
         ..Default::default()
     });
     commands.spawn_bundle(UiCameraBundle::default());
@@ -119,7 +120,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut game: ResMu
                     let height = rand::thread_rng().gen_range(-0.1..0.1);
                     commands
                         .spawn_bundle((
-                            Transform::from_xyz(i as f32, height - 0.2, j as f32),
+                            Transform::from_xyz(i as TReal, height - 0.2, j as TReal),
                             GlobalTransform::identity(),
                         ))
                         .with_children(|cell| {
@@ -136,12 +137,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut game: ResMu
         commands
             .spawn_bundle((
                 Transform {
-                    translation: Vec3::new(
-                        game.player.i as f32,
+                    translation: TVec3::new(
+                        game.player.i as TReal,
                         game.board[game.player.j][game.player.i].height,
-                        game.player.j as f32,
+                        game.player.j as TReal,
                     ),
-                    rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
+                    rotation: TQuat::from_rotation_y(-math::real::consts::FRAC_PI_2),
                     ..Default::default()
                 },
                 GlobalTransform::identity(),
@@ -199,21 +200,21 @@ fn move_player(
         if game.player.i < BOARD_SIZE_I - 1 {
             game.player.i += 1;
         }
-        rotation = -std::f32::consts::FRAC_PI_2;
+        rotation = -math::real::consts::FRAC_PI_2;
         moved = true;
     }
     if keyboard_input.just_pressed(KeyCode::Down) {
         if game.player.i > 0 {
             game.player.i -= 1;
         }
-        rotation = std::f32::consts::FRAC_PI_2;
+        rotation = math::real::consts::FRAC_PI_2;
         moved = true;
     }
     if keyboard_input.just_pressed(KeyCode::Right) {
         if game.player.j < BOARD_SIZE_J - 1 {
             game.player.j += 1;
         }
-        rotation = std::f32::consts::PI;
+        rotation = math::real::consts::PI;
         moved = true;
     }
     if keyboard_input.just_pressed(KeyCode::Left) {
@@ -227,12 +228,12 @@ fn move_player(
     // move on the board
     if moved {
         *transforms.get_mut(game.player.entity.unwrap()).unwrap() = Transform {
-            translation: Vec3::new(
-                game.player.i as f32,
+            translation: TVec3::new(
+                game.player.i as TReal,
                 game.board[game.player.j][game.player.i].height,
-                game.player.j as f32,
+                game.player.j as TReal,
             ),
-            rotation: Quat::from_rotation_y(rotation),
+            rotation: TQuat::from_rotation_y(rotation),
             ..Default::default()
         };
     }
@@ -254,7 +255,7 @@ fn focus_camera(
     mut game: ResMut<Game>,
     mut transforms: QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
 ) {
-    const SPEED: f32 = 2.0;
+    const SPEED: TReal = 2.0;
     // if there is both a player and a bonus, target the mid-point of them
     if let (Some(player_entity), Some(bonus_entity)) = (game.player.entity, game.bonus.entity) {
         if let (Ok(player_transform), Ok(bonus_transform)) = (
@@ -272,21 +273,21 @@ fn focus_camera(
         }
     // otherwise, target the middle
     } else {
-        game.camera_should_focus = Vec3::from(RESET_FOCUS);
+        game.camera_should_focus = TVec3::from(RESET_FOCUS);
     }
     // calculate the camera motion based on the difference between where the camera is looking
     // and where it should be looking; the greater the distance, the faster the motion;
     // smooth out the camera movement using the frame time
     let mut camera_motion = game.camera_should_focus - game.camera_is_focus;
     if camera_motion.length() > 0.2 {
-        camera_motion *= SPEED * time.delta_seconds();
+        camera_motion *= SPEED * time.delta_seconds().default_precision();
         // set the new camera's actual focus
         game.camera_is_focus += camera_motion;
     }
     // look at that new camera's actual focus
     for (mut transform, camera) in transforms.q0_mut().iter_mut() {
         if camera.name == Some(CAMERA_3D.to_string()) {
-            *transform = transform.looking_at(game.camera_is_focus, Vec3::Y);
+            *transform = transform.looking_at(game.camera_is_focus, TVec3::Y);
         }
     }
 }
@@ -322,10 +323,10 @@ fn spawn_bonus(
         commands
             .spawn_bundle((
                 Transform {
-                    translation: Vec3::new(
-                        game.bonus.i as f32,
+                    translation: TVec3::new(
+                        game.bonus.i as TReal,
                         game.board[game.bonus.j][game.bonus.i].height + 0.2,
-                        game.bonus.j as f32,
+                        game.bonus.j as TReal,
                     ),
                     ..Default::default()
                 },
@@ -342,9 +343,9 @@ fn spawn_bonus(
 fn rotate_bonus(game: Res<Game>, time: Res<Time>, mut transforms: Query<&mut Transform>) {
     if let Some(entity) = game.bonus.entity {
         if let Ok(mut cake_transform) = transforms.get_mut(entity) {
-            cake_transform.rotate(Quat::from_rotation_y(time.delta_seconds()));
-            cake_transform.scale = Vec3::splat(
-                1.0 + (game.score as f32 / 10.0 * time.seconds_since_startup().sin() as f32).abs(),
+            cake_transform.rotate(TQuat::from_rotation_y(time.delta_seconds().default_precision()));
+            cake_transform.scale = TVec3::splat(
+                1.0 + (game.score as TReal / 10.0 * time.seconds_since_startup().sin() as TReal).abs(),
             );
         }
     }
