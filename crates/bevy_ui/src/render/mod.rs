@@ -12,7 +12,7 @@ use bevy_app::prelude::*;
 use bevy_asset::{AssetEvent, Assets, Handle, HandleUntyped};
 use bevy_core::FloatOrd;
 use bevy_ecs::prelude::*;
-use bevy_math::{const_vec3, Mat4, Vec2, Vec3, Vec4Swizzles};
+use bevy_math::{const_vec3, F32Convert, Mat4, Vec2, Vec3, Vec4Swizzles};
 use bevy_reflect::TypeUuid;
 use bevy_render::{
     camera::ActiveCameras,
@@ -146,6 +146,8 @@ pub fn extract_uinodes(
     let mut extracted_uinodes = render_world.get_resource_mut::<ExtractedUiNodes>().unwrap();
     extracted_uinodes.uinodes.clear();
     for (uinode, transform, color, image, visibility, clip) in uinode_query.iter() {
+        // TODO: ui elts don't need the extra precision, consider defaulting the bundle Transform32
+        let transform = transform.f32();
         if !visibility.is_visible {
             continue;
         }
@@ -198,6 +200,7 @@ pub fn extract_text_uinodes(
         if uinode.size == Vec2::ZERO {
             continue;
         }
+        let transform = transform.f32();
         if let Some(text_layout) = text_pipeline.get_glyphs(&entity) {
             let text_glyphs = &text_layout.glyphs;
             let alignment_offset = (uinode.size / -2.0).extend(0.0);

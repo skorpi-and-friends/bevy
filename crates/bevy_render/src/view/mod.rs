@@ -17,8 +17,8 @@ use crate::{
 };
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_math::{Mat4, Vec3};
-use bevy_transform::components::GlobalTransform;
+use bevy_math::{F32Convert, Mat4, Vec3};
+use bevy_transform::components::GlobalTransform32;
 
 pub struct ViewPlugin;
 
@@ -66,7 +66,7 @@ pub fn extract_msaa(mut commands: Commands, msaa: Res<Msaa>) {
 #[derive(Component)]
 pub struct ExtractedView {
     pub projection: Mat4,
-    pub transform: GlobalTransform,
+    pub transform: GlobalTransform32,
     pub width: u32,
     pub height: u32,
     pub near: f32,
@@ -135,13 +135,15 @@ fn prepare_view_uniforms(
     view_uniforms.uniforms.clear();
     for (entity, camera) in views.iter() {
         let projection = camera.projection;
-        let inverse_view = camera.transform.compute_matrix().inverse();
+        // going to the gpu, convert into f32
+        let camerfa_xform = camera.transform.f32();
+        let inverse_view = camerfa_xform.compute_matrix().inverse();
         let view_uniforms = ViewUniformOffset {
             offset: view_uniforms.uniforms.push(ViewUniform {
                 view_proj: projection * inverse_view,
                 inverse_view,
                 projection,
-                world_position: camera.transform.translation,
+                world_position: camerfa_xform.translation,
                 near: camera.near,
                 far: camera.far,
                 width: camera.width as f32,

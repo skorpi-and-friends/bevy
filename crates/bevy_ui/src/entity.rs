@@ -3,11 +3,13 @@ use crate::{
     CalculatedSize, FocusPolicy, Interaction, Node, Style, UiColor, UiImage, CAMERA_UI,
 };
 use bevy_ecs::bundle::Bundle;
+use bevy_math::DefaultPrecisionConvert;
 use bevy_render::{
     camera::{Camera, DepthCalculation, OrthographicProjection, WindowOrigin},
     view::{Visibility, VisibleEntities},
 };
 use bevy_text::Text;
+// TODO: consider fixing UI elts to 32 transforms
 use bevy_transform::prelude::{GlobalTransform, Transform};
 
 #[derive(Bundle, Clone, Debug, Default)]
@@ -118,7 +120,7 @@ impl Default for UiCameraBundle {
                 depth_calculation: DepthCalculation::ZDifference,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(0.0, 0.0, far - 0.1),
+            transform: Transform::from_xyz(0.0, 0.0, (far - 0.1).default_precision()),
             global_transform: Default::default(),
             visible_entities: Default::default(),
         }

@@ -13,7 +13,7 @@ macro_rules! impl_transform {
             /// all axes.
             #[inline]
             pub const fn identity() -> Self {
-                Transform {
+                Self {
                     translation: $vec3::ZERO,
                     rotation: $quat::IDENTITY,
                     scale: $vec3::ONE,
@@ -162,7 +162,7 @@ macro_rules! impl_transform {
 
             /// Returns a [`$vec3`] of this [`Transform`] applied to `value`.
             #[inline]
-            pub fn mul_$vec3(&self, mut value: $vec3) -> $vec3 {
+            pub fn mul_vec3(&self, mut value: $vec3) -> $vec3 {
                 value = self.rotation * value;
                 value = self.scale * value;
                 value += self.translation;

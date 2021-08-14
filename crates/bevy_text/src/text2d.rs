@@ -5,7 +5,7 @@ use bevy_ecs::{
     query::{Changed, QueryState, With},
     system::{Local, Query, QuerySet, Res, ResMut},
 };
-use bevy_math::{Mat4, Size, Vec3};
+use bevy_math::{F32Convert, Mat4, Size, Vec3};
 use bevy_render::{texture::Image, RenderWorld};
 use bevy_sprite::{ExtractedSprite, ExtractedSprites, TextureAtlas};
 use bevy_transform::prelude::{GlobalTransform, Transform};
@@ -54,6 +54,8 @@ pub fn extract_text2d_sprite(
     };
 
     for (entity, text, transform, calculated_size) in text2d_query.iter() {
+        // TODO: ui elts don't need the extra precision, consider defaulting the bundle Transform32
+        let transform = transform.f32();
         let (width, height) = (calculated_size.size.width, calculated_size.size.height);
 
         if let Some(text_layout) = text_pipeline.get_glyphs(&entity) {

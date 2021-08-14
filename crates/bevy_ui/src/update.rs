@@ -7,6 +7,7 @@ use bevy_ecs::{
     system::{Commands, Query},
 };
 use bevy_math::Vec2;
+use bevy_math::{DefaultPrecisionConvert, F32Convert};
 use bevy_sprite::Rect;
 use bevy_transform::{
     components::GlobalTransform,
@@ -41,7 +42,7 @@ fn update_hierarchy(
 ) -> f32 {
     current_global_z += UI_Z_STEP;
     if let Ok(mut transform) = node_query.get_mut(entity) {
-        transform.translation.z = current_global_z - parent_global_z;
+        transform.translation.z = (current_global_z - parent_global_z).default_precision();
     }
     if let Ok(children) = children_query.get(entity) {
         let current_parent_global_z = current_global_z;
@@ -101,7 +102,7 @@ fn update_clipping(
     let children_clip = match style.overflow {
         Overflow::Visible => clip,
         Overflow::Hidden => {
-            let node_center = global_transform.translation.truncate();
+            let node_center = global_transform.translation.f32().truncate();
             let node_rect = Rect {
                 min: node_center - node.size / 2.,
                 max: node_center + node.size / 2.,

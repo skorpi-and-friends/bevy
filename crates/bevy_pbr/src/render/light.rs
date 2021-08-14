@@ -10,7 +10,7 @@ use bevy_ecs::{
     prelude::*,
     system::{lifetimeless::*, SystemParamItem},
 };
-use bevy_math::{const_vec3, Mat4, UVec3, UVec4, Vec2, Vec3, Vec4, Vec4Swizzles};
+use bevy_math::{const_vec3, F32Convert, Mat4, UVec3, UVec4, Vec2, Vec3, Vec4, Vec4Swizzles};
 use bevy_render::{
     camera::{Camera, CameraProjection},
     color::Color,
@@ -27,7 +27,7 @@ use bevy_render::{
     texture::*,
     view::{ExtractedView, ViewUniform, ViewUniformOffset, ViewUniforms, VisibleEntities},
 };
-use bevy_transform::components::GlobalTransform;
+use bevy_transform::components::{GlobalTransform, GlobalTransform32};
 use bevy_utils::{tracing::warn, HashMap};
 use std::num::NonZeroU32;
 
@@ -405,6 +405,8 @@ pub fn extract_lights(
     }
 
     for (entity, directional_light, visible_entities, transform) in directional_lights.iter_mut() {
+        let transform = transform.f32();
+
         // Calulate the directional light shadow map texel size using the largest x,y dimension of
         // the orthographic projection divided by the shadow map resolution
         // NOTE: When using various PCF kernel sizes, this will need to be adjusted, according to:
@@ -584,7 +586,7 @@ pub fn prepare_lights(
         Mat4::perspective_infinite_reverse_rh(std::f32::consts::FRAC_PI_2, 1.0, POINT_LIGHT_NEAR_Z);
     let cube_face_rotations = CUBE_MAP_FACES
         .iter()
-        .map(|CubeMapFace { target, up }| GlobalTransform::identity().looking_at(*target, *up))
+        .map(|CubeMapFace { target, up }| GlobalTransform32::identity().looking_at(*target, *up))
         .collect::<Vec<_>>();
 
     global_light_meta.gpu_point_lights.clear();
@@ -628,7 +630,7 @@ pub fn prepare_lights(
                 * light.intensity)
                 .xyz()
                 .extend(1.0 / (light.range * light.range)),
-            position_radius: light.transform.translation.extend(light.radius),
+            position_radius: light.transform.translation.f32().extend(light.radius),
             flags: flags.bits,
             shadow_depth_bias: light.shadow_depth_bias,
             shadow_normal_bias: light.shadow_normal_bias,
@@ -714,7 +716,8 @@ pub fn prepare_lights(
             // ignore scale because we don't want to effectively scale light radius and range
             // by applying those as a view transform to shadow map rendering of objects
             // and ignore rotation because we want the shadow map projections to align with the axes
-            let view_translation = GlobalTransform::from_translation(light.transform.translation);
+            let view_translation =
+                GlobalTransform32::from_translation(light.transform.translation.f32());
 
             for (face_index, view_rotation) in cube_face_rotations.iter().enumerate() {
                 let depth_texture_view =
@@ -830,7 +833,7 @@ pub fn prepare_lights(
                         ExtractedView {
                             width: directional_light_shadow_map.size as u32,
                             height: directional_light_shadow_map.size as u32,
-                            transform: GlobalTransform::from_matrix(view.inverse()),
+                            transform: GlobalTransform32::from_matrix(view.inverse()),
                             projection,
                             near: light.near,
                             far: light.far,

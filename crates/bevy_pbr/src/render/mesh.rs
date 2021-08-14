@@ -8,7 +8,7 @@ use bevy_ecs::{
     prelude::*,
     system::{lifetimeless::*, SystemParamItem},
 };
-use bevy_math::Mat4;
+use bevy_math::{F32Convert, Mat4};
 use bevy_reflect::TypeUuid;
 use bevy_render::{
     mesh::{GpuBufferInfo, Mesh},
@@ -108,7 +108,7 @@ pub fn extract_meshes(
         if !computed_visibility.is_visible {
             continue;
         }
-        let transform = transform.compute_matrix();
+        let transform = transform.compute_matrix().f32();
         caster_values.push((
             entity,
             (
@@ -133,7 +133,7 @@ pub fn extract_meshes(
         if !computed_visibility.is_visible {
             continue;
         }
-        let transform = transform.compute_matrix();
+        let transform = transform.compute_matrix().f32();
         not_caster_values.push((
             entity,
             (

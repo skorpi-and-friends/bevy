@@ -5,6 +5,7 @@ mod camera;
 mod projection;
 
 pub use active_cameras::*;
+use bevy_math::F32Convert;
 use bevy_transform::components::GlobalTransform;
 use bevy_utils::HashMap;
 use bevy_window::{WindowId, Windows};
@@ -91,7 +92,7 @@ fn extract_cameras(
                     },
                     ExtractedView {
                         projection: camera.projection_matrix,
-                        transform: *transform,
+                        transform: transform.f32(),
                         width: window.physical_width().max(1),
                         height: window.physical_height().max(1),
                         near: camera.near,

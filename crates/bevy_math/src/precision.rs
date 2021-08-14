@@ -111,12 +111,6 @@ macro_rules! impl_f32_conv_glam {
     };
 }
 
-impl_f32_conv_glam!(DVec3, Vec3);
-impl_f32_conv_glam!(DVec2, Vec2);
-impl_f32_conv_glam!(DVec4, Vec4);
-impl_f32_conv_glam!(DMat2, Mat2);
-impl_f32_conv_glam!(DMat3, Mat3);
-impl_f32_conv_glam!(DMat4, Mat4);
 impl_f32_conv_glam!(DQuat, Quat);
 
 impl F32Convert for f64 {
@@ -124,6 +118,60 @@ impl F32Convert for f64 {
 
     fn f32(&self) -> Self::F32Ver {
         *self as f32
+    }
+}
+
+impl F32Convert for DVec3 {
+    type F32Ver = Vec3;
+
+    #[inline]
+    fn f32(&self) -> Self::F32Ver {
+        self.as_vec3()
+    }
+}
+
+impl F32Convert for DVec2 {
+    type F32Ver = Vec2;
+
+    #[inline]
+    fn f32(&self) -> Self::F32Ver {
+        self.as_vec2()
+    }
+}
+
+impl F32Convert for DVec4 {
+    type F32Ver = Vec4;
+
+    #[inline]
+    fn f32(&self) -> Self::F32Ver {
+        self.as_vec4()
+    }
+}
+
+impl F32Convert for DMat2 {
+    type F32Ver = Mat2;
+
+    #[inline]
+    fn f32(&self) -> Self::F32Ver {
+        self.as_mat2()
+    }
+}
+
+impl F32Convert for DMat3 {
+    type F32Ver = Mat3;
+
+    #[inline]
+    fn f32(&self) -> Self::F32Ver {
+        self.as_mat3()
+    }
+}
+
+impl F32Convert for DMat4 {
+    type F32Ver = Mat4;
+
+    #[inline]
+    fn f32(&self) -> Self::F32Ver {
+        self.as_mat4()
     }
 }
 
@@ -162,13 +210,6 @@ macro_rules! impl_f64_conv_glam {
         }
     };
 }
-
-impl_f64_conv_glam!(Vec3, DVec3);
-impl_f64_conv_glam!(Vec2, DVec2);
-impl_f64_conv_glam!(Vec4, DVec4);
-impl_f64_conv_glam!(Mat2, DMat2);
-impl_f64_conv_glam!(Mat3, DMat3);
-impl_f64_conv_glam!(Mat4, DMat4);
 impl_f64_conv_glam!(Quat, DQuat);
 
 impl F64Convert for f32 {
@@ -177,5 +218,59 @@ impl F64Convert for f32 {
     #[inline]
     fn f64(&self) -> Self::F64Ver {
         *self as f64
+    }
+}
+
+impl F64Convert for Vec3 {
+    type F64Ver = DVec3;
+
+    #[inline]
+    fn f64(&self) -> Self::F64Ver {
+        self.as_dvec3()
+    }
+}
+
+impl F64Convert for Vec2 {
+    type F64Ver = DVec2;
+
+    #[inline]
+    fn f64(&self) -> Self::F64Ver {
+        self.as_dvec2()
+    }
+}
+
+impl F64Convert for Vec4 {
+    type F64Ver = DVec4;
+
+    #[inline]
+    fn f64(&self) -> Self::F64Ver {
+        self.as_dvec4()
+    }
+}
+
+impl F64Convert for Mat2 {
+    type F64Ver = DMat2;
+
+    #[inline]
+    fn f64(&self) -> Self::F64Ver {
+        self.as_dmat2()
+    }
+}
+
+impl F64Convert for Mat3 {
+    type F64Ver = DMat3;
+
+    #[inline]
+    fn f64(&self) -> Self::F64Ver {
+        self.as_dmat3()
+    }
+}
+
+impl F64Convert for Mat4 {
+    type F64Ver = DMat4;
+
+    #[inline]
+    fn f64(&self) -> Self::F64Ver {
+        self.as_dmat4()
     }
 }

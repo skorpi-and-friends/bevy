@@ -1,5 +1,6 @@
 mod render_layers;
 
+use bevy_math::F32Convert;
 pub use render_layers::*;
 
 use bevy_app::{CoreStage, Plugin};
@@ -121,6 +122,8 @@ pub fn update_frusta<T: Component + CameraProjection + Send + Sync + 'static>(
     mut views: Query<(&GlobalTransform, &T, &mut Frustum)>,
 ) {
     for (transform, projection, mut frustum) in views.iter_mut() {
+        // TODO: consider making firsta precision agnostic
+        let transform = transform.f32();
         let view_projection =
             projection.get_projection_matrix() * transform.compute_matrix().inverse();
         *frustum = Frustum::from_view_projection(
@@ -175,7 +178,7 @@ pub fn check_visibility(
 
             // If we have an aabb and transform, do frustum culling
             if let (Some(aabb), Some(transform)) = (maybe_aabb, maybe_transform) {
-                if !frustum.intersects_obb(aabb, &transform.compute_matrix()) {
+                if !frustum.intersects_obb(aabb, &transform.compute_matrix().f32()) {
                     continue;
                 }
             }
