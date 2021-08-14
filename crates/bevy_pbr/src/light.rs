@@ -1,6 +1,6 @@
 use bevy_core::{Pod, Zeroable};
 use bevy_ecs::reflect::ReflectComponent;
-use bevy_math::Vec3;
+use bevy_math::{F32Convert, Vec3};
 use bevy_reflect::Reflect;
 use bevy_render::color::Color;
 use bevy_transform::components::GlobalTransform;
@@ -37,7 +37,7 @@ pub(crate) struct PointLightUniform {
 
 impl PointLightUniform {
     pub fn new(light: &PointLight, global_transform: &GlobalTransform) -> PointLightUniform {
-        let (x, y, z) = global_transform.translation.into();
+        let (x, y, z) = global_transform.translation.f32().into();
 
         // premultiply color by intensity
         // we don't use the alpha at all, so no reason to multiply only [0..3]

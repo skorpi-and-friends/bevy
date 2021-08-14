@@ -5,7 +5,7 @@ use crate::{StandardMaterial, StandardMaterialUniformData};
 use bevy_asset::{Assets, Handle};
 use bevy_core_pipeline::Transparent3dPhase;
 use bevy_ecs::{prelude::*, system::SystemState};
-use bevy_math::Mat4;
+use bevy_math::{F32Convert, Mat4};
 use bevy_render2::{
     mesh::Mesh,
     render_asset::RenderAssets,
@@ -415,7 +415,8 @@ pub fn extract_meshes(
                 }
             }
             extracted_meshes.push(ExtractedMesh {
-                transform: transform.compute_matrix(),
+                // TODO: camera centered RenderWorld fix
+                transform: transform.compute_matrix().f32(),
                 mesh: mesh_handle.clone_weak(),
                 transform_binding_offset: 0,
                 material_handle: material_handle.clone_weak(),

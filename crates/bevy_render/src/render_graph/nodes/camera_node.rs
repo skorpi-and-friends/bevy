@@ -11,6 +11,7 @@ use bevy_ecs::{
     system::{BoxedSystem, IntoSystem, Local, Query, Res, ResMut},
     world::World,
 };
+use bevy_math::F32Convert;
 use bevy_transform::prelude::*;
 use std::borrow::Cow;
 
@@ -180,7 +181,8 @@ pub fn camera_node_system(
     }
 
     if let Some(RenderResourceBinding::Buffer { buffer, .. }) = bindings.get(CAMERA_VIEW_PROJ) {
-        let view_proj = camera.projection_matrix * view.inverse();
+        // TODO: camera centered RenderWorld fix
+        let view_proj = camera.projection_matrix * view.inverse().f32();
         render_resource_context.write_mapped_buffer(
             staging_buffer,
             offset..(offset + MATRIX_SIZE as u64),
@@ -199,7 +201,8 @@ pub fn camera_node_system(
     }
 
     if let Some(RenderResourceBinding::Buffer { buffer, .. }) = bindings.get(CAMERA_POSITION) {
-        let position: [f32; 3] = global_transform.translation.into();
+        // TODO: camera centered RenderWorld fix
+        let position: [f32; 3] = global_transform.translation.f32().into();
         let position: [f32; 4] = [position[0], position[1], position[2], 0.0];
         render_resource_context.write_mapped_buffer(
             staging_buffer,

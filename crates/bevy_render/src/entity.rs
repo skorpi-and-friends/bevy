@@ -11,6 +11,7 @@ use crate::{
 use base::MainPass;
 use bevy_asset::Handle;
 use bevy_ecs::bundle::Bundle;
+use bevy_math::DefaultPrecisionConvert;
 use bevy_transform::components::{GlobalTransform, Transform};
 
 /// A component bundle for "mesh" entities
@@ -99,7 +100,7 @@ impl OrthographicCameraBundle {
                 ..Default::default()
             },
             visible_entities: Default::default(),
-            transform: Transform::from_xyz(0.0, 0.0, far - 0.1),
+            transform: Transform::from_xyz(0.0, 0.0, (far - 0.1).default_precision()),
             global_transform: Default::default(),
         }
     }

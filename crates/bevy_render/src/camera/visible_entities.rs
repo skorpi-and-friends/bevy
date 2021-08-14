@@ -2,12 +2,14 @@ use super::{Camera, DepthCalculation};
 use crate::{draw::OutsideFrustum, prelude::Visible};
 use bevy_core::FloatOrd;
 use bevy_ecs::{entity::Entity, query::Without, reflect::ReflectComponent, system::Query};
+use bevy_math::F32Convert;
 use bevy_reflect::Reflect;
 use bevy_transform::prelude::GlobalTransform;
 
 #[derive(Debug)]
 pub struct VisibleEntity {
     pub entity: Entity,
+    // TODO: investigate if double precesion is required here
     pub order: FloatOrd,
 }
 
@@ -234,8 +236,11 @@ pub fn visible_entities_system(
                 // smaller distances are sorted to lower indices by using the distance from the
                 // camera
                 FloatOrd(match camera.depth_calculation {
-                    DepthCalculation::ZDifference => camera_position.z - position.z,
-                    DepthCalculation::Distance => (camera_position - position).length_squared(),
+                    // TODO: investigate if double precesion is required here
+                    DepthCalculation::ZDifference => (camera_position.z - position.z).f32(),
+                    DepthCalculation::Distance => {
+                        (camera_position - position).length_squared().f32()
+                    }
                 })
             } else {
                 let order = FloatOrd(no_transform_order);

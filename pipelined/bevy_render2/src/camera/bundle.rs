@@ -3,6 +3,7 @@ use crate::camera::{
     ScalingMode,
 };
 use bevy_ecs::bundle::Bundle;
+use bevy_math::DefaultPrecisionConvert;
 use bevy_transform::components::{GlobalTransform, Transform};
 
 /// Component bundle for camera entities with perspective projection
@@ -64,6 +65,7 @@ impl OrthographicCameraBundle {
         // we want 0 to be "closest" and +far to be "farthest" in 2d, so we offset
         // the camera's translation by far and use a right handed coordinate system
         let far = 1000.0;
+        let z = (far - 0.1).default_precision();
         OrthographicCameraBundle {
             camera: Camera {
                 name: Some(CameraPlugin::CAMERA_2D.to_string()),
@@ -74,7 +76,7 @@ impl OrthographicCameraBundle {
                 depth_calculation: DepthCalculation::ZDifference,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(0.0, 0.0, far - 0.1),
+            transform: Transform::from_xyz(0.0, 0.0, z),
             global_transform: Default::default(),
         }
     }

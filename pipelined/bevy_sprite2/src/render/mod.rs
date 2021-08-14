@@ -5,7 +5,7 @@ use crate::{
 use bevy_asset::{Assets, Handle};
 use bevy_core_pipeline::Transparent2dPhase;
 use bevy_ecs::{prelude::*, system::SystemState};
-use bevy_math::{Mat4, Vec2, Vec3, Vec4Swizzles};
+use bevy_math::{F32Convert, Mat4, Vec2, Vec3, Vec4Swizzles};
 use bevy_render2::{
     mesh::{shape::Quad, Indices, Mesh, VertexAttributeValues},
     render_asset::RenderAssets,
@@ -169,9 +169,10 @@ pub fn extract_atlases(
 
         if let Some(texture_atlas) = texture_atlases.get(texture_atlas_handle) {
             let rect = texture_atlas.textures[atlas_sprite.index as usize];
+            // TODO: camera centered RenderWorld fix
             extracted_sprites.push(ExtractedSprite {
                 atlas_size: Some(texture_atlas.size),
-                transform: transform.compute_matrix(),
+                transform: transform.compute_matrix().f32(),
                 rect,
                 handle: texture_atlas.texture.clone_weak(),
             });
@@ -196,7 +197,8 @@ pub fn extract_sprites(
 
         extracted_sprites.push(ExtractedSprite {
             atlas_size: None,
-            transform: transform.compute_matrix(),
+            // TODO: camera centered RenderWorld fix
+            transform: transform.compute_matrix().f32(),
             rect: Rect {
                 min: Vec2::ZERO,
                 max: sprite.size,

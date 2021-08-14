@@ -5,7 +5,7 @@ use bevy_asset::{
 use bevy_core::Name;
 use bevy_ecs::world::World;
 use bevy_log::warn;
-use bevy_math::Mat4;
+use bevy_math::{DefaultPrecisionConvert, Mat4};
 use bevy_pbr2::{PbrBundle, StandardMaterial};
 use bevy_render2::{
     camera::{
@@ -205,17 +205,17 @@ async fn load_gltf<'a, 'b>(
                     .map(|mesh| mesh.index())
                     .and_then(|i| meshes.get(i).cloned()),
                 transform: match node.transform() {
-                    gltf::scene::Transform::Matrix { matrix } => {
-                        Transform::from_matrix(bevy_math::Mat4::from_cols_array_2d(&matrix))
-                    }
+                    gltf::scene::Transform::Matrix { matrix } => Transform::from_matrix(
+                        bevy_math::Mat4::from_cols_array_2d(&matrix).default_precision(),
+                    ),
                     gltf::scene::Transform::Decomposed {
                         translation,
                         rotation,
                         scale,
                     } => Transform {
-                        translation: bevy_math::Vec3::from(translation),
-                        rotation: bevy_math::Quat::from_vec4(rotation.into()),
-                        scale: bevy_math::Vec3::from(scale),
+                        translation: bevy_math::Vec3::from(translation).default_precision(),
+                        rotation: bevy_math::Quat::from_vec4(rotation.into()).default_precision(),
+                        scale: bevy_math::Vec3::from(scale).default_precision(),
                     },
                 },
             },
@@ -450,7 +450,7 @@ fn load_node(
     let transform = gltf_node.transform();
     let mut gltf_error = None;
     let mut node = world_builder.spawn_bundle((
-        Transform::from_matrix(Mat4::from_cols_array_2d(&transform.matrix())),
+        Transform::from_matrix(Mat4::from_cols_array_2d(&transform.matrix()).default_precision()),
         GlobalTransform::identity(),
     ));
 

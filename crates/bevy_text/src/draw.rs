@@ -1,5 +1,5 @@
 use crate::{PositionedGlyph, TextSection};
-use bevy_math::{Mat4, Vec3};
+use bevy_math::{DefaultPrecisionConvert, F32Convert, Mat4, Vec3};
 use bevy_render::pipeline::IndexFormat;
 use bevy_render::{
     draw::{Draw, DrawContext, DrawError, Drawable},
@@ -78,12 +78,13 @@ impl<'a> Drawable for DrawableText<'a> {
             };
 
             let transform = Mat4::from_rotation_translation(
-                self.global_transform.rotation,
-                self.global_transform.translation,
-            ) * Mat4::from_scale(self.global_transform.scale / self.scale_factor)
-                * Mat4::from_translation(
-                    self.alignment_offset * self.scale_factor + tv.position.extend(0.),
-                );
+                self.global_transform.rotation.f32(),
+                self.global_transform.translation.f32(),
+            ) * Mat4::from_scale(
+                (self.global_transform.scale / self.scale_factor.default_precision()).f32(),
+            ) * Mat4::from_translation(
+                self.alignment_offset * self.scale_factor + tv.position.extend(0.),
+            );
 
             let transform_buffer = context.get_uniform_buffer(&transform).unwrap();
             let sprite_buffer = context.get_uniform_buffer(&sprite).unwrap();

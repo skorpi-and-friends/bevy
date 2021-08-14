@@ -4,6 +4,7 @@ use bevy_ecs::{
     query::{With, Without},
     system::Query,
 };
+use bevy_math::DefaultPrecisionConvert;
 use bevy_transform::prelude::{Children, Parent, Transform};
 
 pub const UI_Z_STEP: f32 = 0.001;
@@ -34,7 +35,7 @@ fn update_hierarchy(
 ) -> f32 {
     current_global_z += UI_Z_STEP;
     if let Ok(mut transform) = node_query.get_mut(entity) {
-        transform.translation.z = current_global_z - parent_global_z;
+        transform.translation.z = (current_global_z - parent_global_z).default_precision();
     }
     if let Ok(children) = children_query.get(entity) {
         let current_parent_global_z = current_global_z;

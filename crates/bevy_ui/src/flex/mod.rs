@@ -8,7 +8,8 @@ use bevy_ecs::{
     system::{Query, Res, ResMut},
 };
 use bevy_log::warn;
-use bevy_math::Vec2;
+// TODO: ui won't most likely need f64 precision but deliberate still
+use bevy_math::{DefaultPrecisionConvert, F32Convert, Vec2};
 use bevy_transform::prelude::{Children, Parent, Transform};
 use bevy_utils::HashMap;
 use bevy_window::{Window, WindowId, WindowScaleFactorChanged, Windows};
@@ -271,14 +272,15 @@ pub fn flex_node_system(
 
     let physical_to_logical_factor = 1. / logical_to_physical_factor;
 
-    let to_logical = |v| (physical_to_logical_factor * v as f64) as f32;
+    // let to_logical = |v| (physical_to_logical_factor * v as f64) as f32;
+    let to_logical = |v| (physical_to_logical_factor * v as f64).default_precision();
 
     // PERF: try doing this incrementally
     for (entity, mut node, mut transform, parent) in node_transform_query.iter_mut() {
         let layout = flex_surface.get_layout(entity).unwrap();
         node.size = Vec2::new(
-            to_logical(layout.size.width),
-            to_logical(layout.size.height),
+            to_logical(layout.size.width).f32(),
+            to_logical(layout.size.height).f32(),
         );
         let position = &mut transform.translation;
         position.x = to_logical(layout.location.x + layout.size.width / 2.0);

@@ -6,6 +6,7 @@ use crate::{
 };
 use bevy_asset::Handle;
 use bevy_ecs::bundle::Bundle;
+use bevy_math::DefaultPrecisionConvert;
 use bevy_render::{
     camera::{Camera, DepthCalculation, OrthographicProjection, VisibleEntities, WindowOrigin},
     draw::Draw,
@@ -15,6 +16,7 @@ use bevy_render::{
 };
 use bevy_sprite::{ColorMaterial, QUAD_HANDLE};
 use bevy_text::Text;
+// TODO: consider fixing UI elts to 32 transforms
 use bevy_transform::prelude::{GlobalTransform, Transform};
 
 #[derive(Bundle, Clone, Debug)]
@@ -189,7 +191,7 @@ impl Default for UiCameraBundle {
                 ..Default::default()
             },
             visible_entities: Default::default(),
-            transform: Transform::from_xyz(0.0, 0.0, far - 0.1),
+            transform: Transform::from_xyz(0.0, 0.0, (far - 0.1).default_precision()),
             global_transform: Default::default(),
         }
     }

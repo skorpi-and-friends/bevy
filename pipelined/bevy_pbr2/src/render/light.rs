@@ -1,7 +1,7 @@
 use crate::{AmbientLight, DirectionalLight, ExtractedMeshes, MeshMeta, PbrShaders, PointLight};
 use bevy_core_pipeline::Transparent3dPhase;
 use bevy_ecs::{prelude::*, system::SystemState};
-use bevy_math::{const_vec3, Mat4, Vec3, Vec4};
+use bevy_math::{const_vec3, F32Convert, Mat4, Vec3, Vec4};
 use bevy_render2::{
     camera::CameraProjection,
     color::Color,
@@ -14,7 +14,7 @@ use bevy_render2::{
     texture::*,
     view::{ExtractedView, ViewUniformOffset},
 };
-use bevy_transform::components::GlobalTransform;
+use bevy_transform::components::{GlobalTransform, GlobalTransform32};
 use crevice::std140::AsStd140;
 use std::num::NonZeroU32;
 
@@ -28,7 +28,7 @@ pub struct ExtractedPointLight {
     intensity: f32,
     range: f32,
     radius: f32,
-    transform: GlobalTransform,
+    transform: GlobalTransform32, // all gpu types are single precision
     shadow_depth_bias: f32,
     shadow_normal_bias: f32,
 }
@@ -242,7 +242,7 @@ pub fn extract_lights(
             intensity: point_light.intensity,
             range: point_light.range,
             radius: point_light.radius,
-            transform: *transform,
+            transform: transform.f32(),
             shadow_depth_bias: point_light.shadow_depth_bias,
             // The factor of SQRT_2 is for the worst-case diagonal offset
             shadow_normal_bias: point_light.shadow_normal_bias
@@ -267,7 +267,7 @@ pub fn extract_lights(
             .insert(ExtractedDirectionalLight {
                 color: directional_light.color,
                 illuminance: directional_light.illuminance,
-                direction: transform.forward(),
+                direction: transform.forward().f32(),
                 projection: directional_light.shadow_projection.get_projection_matrix(),
                 shadow_depth_bias: directional_light.shadow_depth_bias,
                 // The factor of SQRT_2 is for the worst-case diagonal offset
@@ -415,11 +415,13 @@ pub fn prepare_lights(
             // ignore scale because we don't want to effectively scale light radius and range
             // by applying those as a view transform to shadow map rendering of objects
             // and ignore rotation because we want the shadow map projections to align with the axes
-            let view_translation = GlobalTransform::from_translation(light.transform.translation);
+            // TODO: camera centered RenderWorld fix
+            let view_translation =
+                GlobalTransform32::from_translation(light.transform.translation.f32());
 
             for (face_index, CubeMapFace { target, up }) in CUBE_MAP_FACES.iter().enumerate() {
                 // use the cubemap projection direction
-                let view_rotation = GlobalTransform::identity().looking_at(*target, *up);
+                let view_rotation = GlobalTransform32::identity().looking_at(*target, *up);
 
                 let depth_texture_view =
                     point_light_depth_texture
@@ -496,6 +498,7 @@ pub fn prepare_lights(
 
             // NOTE: A directional light seems to have to have an eye position on the line along the direction of the light
             //       through the world origin. I (Rob Swain) do not yet understand why it cannot be translated away from this.
+            // TODO: camrea centered RenderWorld fix
             let view = Mat4::look_at_rh(Vec3::ZERO, light.direction, Vec3::Y);
             // NOTE: This orthographic projection defines the volume within which shadows from a directional light can be cast
             let projection = light.projection;
@@ -535,7 +538,7 @@ pub fn prepare_lights(
                     ExtractedView {
                         width: DIRECTIONAL_SHADOW_SIZE.width,
                         height: DIRECTIONAL_SHADOW_SIZE.height,
-                        transform: GlobalTransform::from_matrix(view.inverse()),
+                        transform: GlobalTransform32::from_matrix(view.inverse()),
                         projection,
                     },
                     RenderPhase::<ShadowPhase>::default(),

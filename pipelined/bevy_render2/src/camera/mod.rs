@@ -15,6 +15,7 @@ pub use projection::*;
 use crate::{view::ExtractedView, RenderStage};
 use bevy_app::{App, CoreStage, Plugin};
 use bevy_ecs::prelude::*;
+use bevy_math::F32Convert;
 
 #[derive(Default)]
 pub struct CameraPlugin;
@@ -77,7 +78,7 @@ fn extract_cameras(
                     },
                     ExtractedView {
                         projection: camera.projection_matrix,
-                        transform: *transform,
+                        transform: transform.f32(),
                         width: window.physical_width(),
                         height: window.physical_height(),
                     },
