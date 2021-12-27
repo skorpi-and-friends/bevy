@@ -26,6 +26,7 @@ default = [
   "vorbis",
   "x11",
   "filesystem_watcher",
+  # "xform_64"
 ]
 
 # Force dynamic linking, which improves iterative compile times
@@ -87,6 +88,8 @@ subpixel_glyph_atlas = ["bevy_internal/subpixel_glyph_atlas"]
 
 # enable systems that allow for automated testing on CI
 bevy_ci_testing = ["bevy_internal/bevy_ci_testing"]
+
+xform_64 = ["bevy_internal/xform_64"]
 
 [dependencies]
 bevy_dylib = { path = "crates/bevy_dylib", version = "0.5.0", default-features = false, optional = true }

@@ -2,6 +2,8 @@ use bevy_ecs::{component::Component, reflect::ReflectComponent};
 use bevy_math::{Mat4, Vec3, Vec3A, Vec4};
 use bevy_reflect::Reflect;
 
+// TODO: make precesion agnostic
+
 /// An Axis-Aligned Bounding Box
 #[derive(Component, Clone, Debug, Default, Reflect)]
 #[reflect(Component)]

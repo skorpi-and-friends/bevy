@@ -1,14 +1,14 @@
 use std::collections::HashSet;
 
 use bevy_ecs::prelude::*;
-use bevy_math::{Mat4, UVec2, UVec3, Vec2, Vec3, Vec3Swizzles, Vec4, Vec4Swizzles};
+use bevy_math::{F32Convert, Mat4, UVec2, UVec3, Vec2, Vec3, Vec3Swizzles, Vec4, Vec4Swizzles};
 use bevy_render::{
     camera::{Camera, CameraProjection, OrthographicProjection},
     color::Color,
     primitives::{Aabb, CubemapFrusta, Frustum, Sphere},
     view::{ComputedVisibility, RenderLayers, Visibility, VisibleEntities},
 };
-use bevy_transform::components::GlobalTransform;
+use bevy_transform::components::{GlobalTransform, GlobalTransform32};
 use bevy_window::Windows;
 
 use crate::{
@@ -466,7 +466,7 @@ pub fn assign_lights_to_clusters(
     let light_count = lights.iter().count();
     let mut global_lights_set = HashSet::with_capacity(light_count);
     for (view_entity, view_transform, camera, frustum, mut clusters) in views.iter_mut() {
-        let view_transform = view_transform.compute_matrix();
+        let view_transform = view_transform.compute_matrix().f32();
         let inverse_view_transform = view_transform.inverse();
         let cluster_count = clusters.aabbs.len();
         let is_orthographic = camera.projection_matrix.w_axis.w == 1.0;
@@ -483,7 +483,7 @@ pub fn assign_lights_to_clusters(
 
         for (light_entity, light_transform, light) in lights.iter() {
             let light_sphere = Sphere {
-                center: light_transform.translation,
+                center: light_transform.translation.f32(),
                 radius: light.range,
             };
 
@@ -601,6 +601,7 @@ pub fn update_directional_light_frusta(
         if !directional_light.shadows_enabled {
             continue;
         }
+        let transform = transform.f32();
 
         let view_projection = directional_light.shadow_projection.get_projection_matrix()
             * transform.compute_matrix().inverse();
@@ -622,7 +623,7 @@ pub fn update_point_light_frusta(
         Mat4::perspective_infinite_reverse_rh(std::f32::consts::FRAC_PI_2, 1.0, POINT_LIGHT_NEAR_Z);
     let view_rotations = CUBE_MAP_FACES
         .iter()
-        .map(|CubeMapFace { target, up }| GlobalTransform::identity().looking_at(*target, *up))
+        .map(|CubeMapFace { target, up }| GlobalTransform32::identity().looking_at(*target, *up))
         .collect::<Vec<_>>();
 
     let global_lights_set = global_lights
@@ -639,11 +640,12 @@ pub fn update_point_light_frusta(
         if !point_light.shadows_enabled || !global_lights_set.contains(&entity) {
             continue;
         }
+        let transform = transform.f32();
 
         // ignore scale because we don't want to effectively scale light radius and range
         // by applying those as a view transform to shadow map rendering of objects
         // and ignore rotation because we want the shadow map projections to align with the axes
-        let view_translation = GlobalTransform::from_translation(transform.translation);
+        let view_translation = GlobalTransform32::from_translation(transform.translation);
         let view_backward = transform.back();
 
         for (view_rotation, frustum) in view_rotations.iter().zip(cubemap_frusta.iter_mut()) {
@@ -722,7 +724,7 @@ pub fn check_light_mesh_visibility(
 
             // If we have an aabb and transform, do frustum culling
             if let (Some(aabb), Some(transform)) = (maybe_aabb, maybe_transform) {
-                if !frustum.intersects_obb(aabb, &transform.compute_matrix()) {
+                if !frustum.intersects_obb(aabb, &transform.compute_matrix().f32()) {
                     continue;
                 }
             }
@@ -757,7 +759,7 @@ pub fn check_light_mesh_visibility(
 
                 let view_mask = maybe_view_mask.copied().unwrap_or_default();
                 let light_sphere = Sphere {
-                    center: transform.translation,
+                    center: transform.translation.f32(),
                     radius: point_light.range,
                 };
 
@@ -781,7 +783,7 @@ pub fn check_light_mesh_visibility(
 
                     // If we have an aabb and transform, do frustum culling
                     if let (Some(aabb), Some(transform)) = (maybe_aabb, maybe_transform) {
-                        let model_to_world = transform.compute_matrix();
+                        let model_to_world = transform.compute_matrix().f32();
                         // Do a cheap sphere vs obb test to prune out most meshes outside the sphere of the light
                         if !light_sphere.intersects_obb(aabb, &model_to_world) {
                             continue;

@@ -7,6 +7,7 @@ use bevy_ecs::{
     system::{Local, Query, Res},
 };
 use bevy_input::{mouse::MouseButton, touch::Touches, Input};
+use bevy_math::F32Convert;
 use bevy_reflect::{Reflect, ReflectDeserialize};
 use bevy_transform::components::GlobalTransform;
 use bevy_window::Windows;
@@ -95,7 +96,7 @@ pub fn ui_focus_system(
         .iter_mut()
         .filter_map(
             |(entity, node, global_transform, interaction, focus_policy)| {
-                let position = global_transform.translation;
+                let position = global_transform.translation.f32();
                 let ui_position = position.truncate();
                 let extents = node.size / 2.0;
                 let min = ui_position - extents;

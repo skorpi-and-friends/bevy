@@ -8,7 +8,7 @@ use bevy_ecs::{
     reflect::ReflectComponent,
     system::{QuerySet, Res},
 };
-use bevy_math::{Mat4, Vec2, Vec3};
+use bevy_math::{F32Convert, Mat4, TVec3, Vec2, Vec3};
 use bevy_reflect::{Reflect, ReflectDeserialize};
 use bevy_transform::components::GlobalTransform;
 use bevy_window::{WindowCreated, WindowId, WindowResized, Windows};
@@ -48,13 +48,20 @@ impl Camera {
         &self,
         windows: &Windows,
         camera_transform: &GlobalTransform,
-        world_position: Vec3,
+        world_position: TVec3,
     ) -> Option<Vec2> {
         let window = windows.get(self.window)?;
         let window_size = Vec2::new(window.width(), window.height());
+
+        // TODO: camera centered RenderWorld fix
+        // this assumes all object xforms are relative to the camera when they arrive at the gpu
+        // let world_position = (world_position - camera_transform.translation).f32();
+
+        let world_position = world_position.f32();
+
         // Build a transform to convert from world to NDC using camera data
         let world_to_ndc: Mat4 =
-            self.projection_matrix * camera_transform.compute_matrix().inverse();
+            self.projection_matrix * camera_transform.compute_matrix().inverse().f32();
         let ndc_space_coords: Vec3 = world_to_ndc.project_point3(world_position);
         // NDC z-values outside of 0 < z < 1 are outside the camera frustum and are thus not in screen space
         if ndc_space_coords.z < 0.0 || ndc_space_coords.z > 1.0 {

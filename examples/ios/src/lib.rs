@@ -33,12 +33,14 @@ fn touch_camera(
             let mut transform = camera.single_mut();
             *transform = Transform::from_xyz(
                 transform.translation.x
-                    + (touch.position.x - last_position.x) / window.width() * 5.0,
+                    + ((touch.position.x - last_position.x) / window.width() * 5.0)
+                        .default_precision(),
                 transform.translation.y,
                 transform.translation.z
-                    + (touch.position.y - last_position.y) / window.height() * 5.0,
+                    + ((touch.position.y - last_position.y) / window.height() * 5.0)
+                        .default_precision(),
             )
-            .looking_at(Vec3::ZERO, Vec3::Y);
+            .looking_at(TVec3::ZERO, TVec3::Y);
         }
         *last_position = Some(touch.position);
     }
@@ -85,7 +87,7 @@ fn setup_scene(
     });
     // camera
     commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(TVec3::ZERO, TVec3::Y),
         ..Default::default()
     });
 }

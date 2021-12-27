@@ -7,8 +7,8 @@ use crate::{
     view::VisibleEntities,
 };
 use bevy_ecs::bundle::Bundle;
-use bevy_math::Vec3;
-use bevy_transform::components::{GlobalTransform, Transform};
+use bevy_math::{DefaultPrecisionConvert, Vec3};
+use bevy_transform::components::{GlobalTransform, Transform, Transform32};
 
 use super::CameraProjection;
 
@@ -84,7 +84,7 @@ impl OrthographicCameraBundle {
             depth_calculation: DepthCalculation::ZDifference,
             ..Default::default()
         };
-        let transform = Transform::from_xyz(0.0, 0.0, far - 0.1);
+        let transform = Transform32::from_xyz(0.0, 0.0, far - 0.1);
         let view_projection =
             orthographic_projection.get_projection_matrix() * transform.compute_matrix().inverse();
         let frustum = Frustum::from_view_projection(
@@ -93,6 +93,7 @@ impl OrthographicCameraBundle {
             &transform.back(),
             orthographic_projection.far(),
         );
+        let transform = transform.default_precision();
         OrthographicCameraBundle {
             camera: Camera {
                 name: Some(CameraPlugin::CAMERA_2D.to_string()),
